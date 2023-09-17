@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: New Horde
   m_EditorClassIdentifier: Assembly-CSharp:NekraByte:Utility/DataTypes/HordeData
-  _hordeType: 2
+  _hordeType: 3
+  Debug: 1
   _center: {x: 0, y: 0, z: 0}
   _randomRadius: 5
-  _width: 1
-  _height: 1
+  _width: 2
+  _height: 2
   _circleRadius: 1
   _hordeTexture: {fileID: 0}
-  _customMeterThreshold: 0
-  _customMeshLineThickness: 0
-  _spawnEachMeter: 1
+  _customMeterThreshold: 1
+  _customMeshLineThickness: 1
+  _spawnEachMeter: 0.5
   _meshLineThickness: 1

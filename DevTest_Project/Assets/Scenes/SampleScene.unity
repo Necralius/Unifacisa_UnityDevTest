@@ -544,6 +544,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _currentHorde: {fileID: 11400000, guid: a4a76a499f0056549bb5defa39c7c647, type: 2}
+  _player: {fileID: 2098528679}
 --- !u!1 &2098528679
 GameObject:
   m_ObjectHideFlags: 0
@@ -574,7 +575,7 @@ Transform:
   m_GameObject: {fileID: 2098528679}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.243, y: -0.45, z: 0}
+  m_LocalPosition: {x: 0.33, y: -0.45, z: 0}
   m_LocalScale: {x: 2.0250592, y: 2.0250592, z: 2.0250592}
   m_ConstrainProportionsScale: 0
   m_Children: []
