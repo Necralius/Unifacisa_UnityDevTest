@@ -10,17 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: New Horde
+  m_Name: CircleHorde
   m_EditorClassIdentifier: Assembly-CSharp:NekraByte:Utility/DataTypes/HordeData
-  _hordeType: 3
-  Debug: 1
-  _center: {x: 0, y: 0, z: 0}
+  _hordeTag: CircleHorde1
+  _enemyTag: EnemyBase
+  _hordeType: 2
+  _spawnTime: 10
   _randomRadius: 5
-  _width: 2
-  _height: 2
-  _circleRadius: 1
+  _width: 5
+  _height: 5
+  _circleRadius: 9
+  _circleResolution: 25
   _hordeTexture: {fileID: 0}
   _customMeterThreshold: 1
-  _customMeshLineThickness: 1
+  _customMeshLineThickness: 0
   _spawnEachMeter: 0.5
   _meshLineThickness: 1

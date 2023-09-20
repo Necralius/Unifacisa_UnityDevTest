@@ -1,90 +1,92 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static NekraByte.Utility.DataTypes;
 using static NekraByte.Utility.Enumerators;
-using static UnityEditor.Experimental.GraphView.GraphView;
 
 namespace NekraByte
 {
     // ----------------------------------------------------------------------
-    // Name: NekraByte
+    // Name: NekraByte (Static Class)
     // Desc: This static class bring some new DataTypes, Enumerations and
     //       tools to improve the current project development.
     // ----------------------------------------------------------------------
     public static class Utility
     {
+        #region - Data Types -
+        // --------------------------------------------------------------
+        // Name: DataTypes (Static Class)
+        // Desc: This class declares some DataTypes that are required to
+        //       the project development.
+        // --------------------------------------------------------------
         public static class DataTypes
         {
-            //
+            #region - Pool Data -
+            // --------------------------------------------------------------
             // Name: PoolData (Class)
-            // Desc:
-            //
+            // Desc: This class declare the pool data for the object pooler.
+            // --------------------------------------------------------------
             [Serializable]
             public class PoolData
             {
                 public string       tag;
                 public int          size;
                 public GameObject   prefab;
+                public bool isAnCanvasObject = false;
             }
+            #endregion
 
-            [Serializable]
-            [CreateAssetMenu(fileName = "New Horde", menuName = "Unifacisa Test/Hordes/New Horde")]
-            public class HordeData : ScriptableObject
+            // --------------------------------------------------------------
+            // Name: IPooledObject (Interface)
+            // Desc: This inteface implements two required methods that
+            //       manage actions on the pooled objects. 
+            // --------------------------------------------------------------
+            public interface IPooledObject
             {
-                public HordeType _hordeType;
-                [Tooltip("True means that the horde format will have total gizmos.")] 
-                public bool Debug = false;
-                [HideInInspector] public Vector3 _center = Vector3.zero;
-
-
-                //Random
-                [HideInInspector] public float  _randomRadius = 5f;
-
-                //Quad
-                [HideInInspector] public float _width               = 1f;
-                [HideInInspector] public float _height              = 1f;
-
-                //Circle
-                [HideInInspector] public float _circleRadius        = 1f;
-
-                //Texture
-                [HideInInspector] public Texture _hordeTexture          = null;
-
-                //General Settings
-                [HideInInspector] public bool _customMeterThreshold     = false;
-                [HideInInspector] public bool _customMeshLineThickness  = false;
-
-                [HideInInspector] public float _spawnEachMeter      = 1f;
-                [HideInInspector] public float _meshLineThickness   = 1f;
+                public void OnActivate();
+                public void OnDeactivate();
             }
         }
+        #endregion
+
+        #region - Enumerators Types -
+        // --------------------------------------------------------------
+        // Name: Enumerators (Static Class)
+        // Desc: This class storages an enumerators package to the
+        //       current project.
+        // --------------------------------------------------------------
         public static class Enumerators
         {
             public enum ControllerType { Joystick, Keyboard, Mouse }
             public enum HordeType { Random, Texture, Circle, Quad }
         }
+        #endregion
 
+        #region - Procedural Data Generation -
+        // --------------------------------------------------------------
+        // Name: Procedural (Static Class)
+        // Desc: This class storages methods that mainly produces
+        //       procedural data and return this data.
+        // --------------------------------------------------------------
         public static class Procedural
         {
             #region - Square Horde Positions Generation -
-            public static List<Vector2> DrawSquareHorde(GameObject playerObject, HordeData hordeData)
+            // --------------------------------------------------------------
+            // Name: DrawSquareHorde
+            // Desc: This method uses vetorial math to draw an square,
+            //       considering the current target as it center, also draw
+            //       the horde thickness, spawnpoints and later, the method
+            //       return all the spawnpoints(Vector2) of this square.
+            // --------------------------------------------------------------
+            public static List<Vector2> DrawSquareHorde(Vector2 targetCenter, HordeData hordeData, bool debug)
             {
                 List<Vector2> spawnPoints = new List<Vector2>();
-                if (playerObject == null)
-                {
-                    Debug.LogWarning("The horde drawning need the current player position, and the player GameObject is null!");
-                    return null;
-                }
 
-                if (hordeData.Debug) Gizmos.color = Color.yellow;
-                Vector3 targetPos = playerObject.transform.position;
+                float xPos    = targetCenter.x;
+                float yPos    = targetCenter.y;
 
-                float xPos = targetPos.x;
-                float yPos = targetPos.y;
-                float height = hordeData._height;
-                float width = hordeData._width;
+                float height  = hordeData._height;
+                float width   = hordeData._width;
 
                 Vector2 vec01 = new Vector2(-width + xPos, height + yPos);
                 Vector2 vec02 = new Vector2(width + xPos, height + yPos);
@@ -96,12 +98,20 @@ namespace NekraByte
                 spawnPoints.Add(vec03);
                 spawnPoints.Add(vec04);
 
-                float upDistance = Vector2.Distance(vec01, vec02);
-                float rightDistance = Vector2.Distance(vec02, vec03);
-                float bottomDistance = Vector2.Distance(vec03, vec04);
-                float leftDistance = Vector2.Distance(vec04, vec01);
+                if (debug)
+                {
+                    Gizmos.DrawLine(vec01, vec02);
+                    Gizmos.DrawLine(vec02, vec03);
+                    Gizmos.DrawLine(vec03, vec04);
+                    Gizmos.DrawLine(vec04, vec01);
+                }
 
-                float meterSpawn = hordeData._spawnEachMeter;
+                float upDistance        = Vector2.Distance(vec01, vec02);
+                float rightDistance     = Vector2.Distance(vec02, vec03);
+                float bottomDistance    = Vector2.Distance(vec03, vec04);
+                float leftDistance      = Vector2.Distance(vec04, vec01);
+
+                float meterSpawn        = hordeData._spawnEachMeter;
 
                 for (int i = 0; i < 4; i++)
                 {
@@ -142,15 +152,16 @@ namespace NekraByte
                     }
                 }
 
-                if (hordeData._customMeshLineThickness)
+                if (!hordeData._customMeshLineThickness) hordeData._meshLineThickness = 0f;
+                if (hordeData._customMeshLineThickness && hordeData._meshLineThickness > 0.3f)
                 {
                     float lineThickness = hordeData._meshLineThickness;
-                    width += lineThickness;
-                    height += lineThickness;
+                    width   += lineThickness;
+                    height  += lineThickness;
 
                     Vector2 vec001 = new Vector2(-width + xPos, height + yPos);
-                    Vector2 vec002 = new Vector2(width + xPos, height + yPos);
-                    Vector2 vec003 = new Vector2(width + xPos, -height + yPos);
+                    Vector2 vec002 = new Vector2(width + xPos , height + yPos);
+                    Vector2 vec003 = new Vector2(width + xPos , -height + yPos);
                     Vector2 vec004 = new Vector2(-width + xPos, -height + yPos);
 
                     spawnPoints.Add(vec001);
@@ -158,10 +169,18 @@ namespace NekraByte
                     spawnPoints.Add(vec003);
                     spawnPoints.Add(vec004);
 
-                    float upDistance1 = Vector2.Distance(vec001, vec002);
-                    float rightDistance1 = Vector2.Distance(vec002, vec003);
-                    float bottomDistance1 = Vector2.Distance(vec003, vec004);
-                    float leftDistance1 = Vector2.Distance(vec004, vec001);
+                    if (debug)
+                    {
+                        Gizmos.DrawLine(vec001, vec002);
+                        Gizmos.DrawLine(vec002, vec003);
+                        Gizmos.DrawLine(vec003, vec004);
+                        Gizmos.DrawLine(vec004, vec001);
+                    }
+
+                    float upDistance1       = Vector2.Distance(vec001, vec002);
+                    float rightDistance1    = Vector2.Distance(vec002, vec003);
+                    float bottomDistance1   = Vector2.Distance(vec003, vec004);
+                    float leftDistance1     = Vector2.Distance(vec004, vec001);
 
                     for (int i = 0; i < 4; i++)
                     {
@@ -174,7 +193,6 @@ namespace NekraByte
                         }
 
                         int rightIterations = (int)Mathf.Round(rightDistance1 / hordeData._spawnEachMeter);
-
                         for (int r = 0; r <= rightIterations; r++)
                         {
                             Vector2 newVec = new Vector2(vec002.x, vec002.y - (meterSpawn * r));
@@ -191,7 +209,6 @@ namespace NekraByte
                         }
 
                         int leftIterations = (int)Mathf.Round(leftDistance1 / hordeData._spawnEachMeter);
-
                         for (int l = 0; l <= leftIterations; l++)
                         {
                             Vector2 newVec = new Vector2(vec004.x, vec004.y + (meterSpawn * l));
@@ -199,30 +216,65 @@ namespace NekraByte
                             else spawnPoints.Add(newVec);
                         }
                     }
-
-                    if (hordeData.Debug)
-                    {
-                        Gizmos.DrawLine(vec001, vec002);
-                        Gizmos.DrawLine(vec002, vec003);
-                        Gizmos.DrawLine(vec003, vec004);
-                        Gizmos.DrawLine(vec004, vec001);
-                    }
                 }
 
-                if (hordeData.Debug)
-                {
-                    Gizmos.DrawLine(vec01, vec02);
-                    Gizmos.DrawLine(vec02, vec03);
-                    Gizmos.DrawLine(vec03, vec04);
-                    Gizmos.DrawLine(vec04, vec01);
-                }
+                //Gizmos Draw
+                if (debug) Gizmos.color = Color.yellow;
+                if (debug) 
+                    foreach (var vec in spawnPoints) Gizmos.DrawSphere(vec, 0.1f); //Only active if the boolean Debug is true
 
-                if (hordeData.Debug) foreach (var vec in spawnPoints) Gizmos.DrawSphere(vec, 0.1f);
                 return spawnPoints;
             }
             #endregion
 
+            #region - Circle Horde Positions Generation -
+            // --------------------------------------------------------------
+            // Name: DrawCircleHorde (Static Method)
+            // Desc: This method uses vetorial math to draw an circle,
+            //       considering the current target as it center, also draw
+            //       the horde thickness, spawnpoints and later, the method
+            //       return all the SpawnPoints(Vector2) of this square.
+            // --------------------------------------------------------------
+            public static List<Vector2> DrawCircleHorde(Vector2 targetCenter, HordeData hordeData, bool debug)
+            {
+                List<Vector2> spawnPoints = new List<Vector2>();
 
+                float xPos = targetCenter.x;
+                float yPos = targetCenter.y;
+
+                //Circle positions generation considering the player pos as center.
+                for (int i = 0; i < hordeData._circleResolution; i++)
+                {
+                    float circumferenceProgress = (float)i/ hordeData._circleResolution;
+
+                    float currentRadian = circumferenceProgress * 2 * Mathf.PI;
+
+                    float xScaled = Mathf.Cos(currentRadian);
+                    float yScaled = Mathf.Sin(currentRadian);
+
+                    float x = xScaled * hordeData._circleRadius;
+                    float y = yScaled * hordeData._circleRadius;
+
+                    Vector2 newVec = new Vector2(x + xPos, y + yPos);
+                    spawnPoints.Add(newVec);
+                }
+
+                //Gizmos circle rendering -> Only active if the boolean Debug is true
+                if (debug) Gizmos.color = Color.yellow;
+                if (debug)
+                {
+                    for (int i = 0; i < spawnPoints.Count; i++)
+                    {
+                        if (i == spawnPoints.Count - 1) Gizmos.DrawLine(spawnPoints[i], spawnPoints[0]);
+                        else Gizmos.DrawLine(spawnPoints[i], spawnPoints[i + 1]);
+
+                        Gizmos.DrawSphere(spawnPoints[i], 0.1f);
+                    }
+                }
+                return spawnPoints;
+            }
+            #endregion
         }
+        #endregion
     }
 }

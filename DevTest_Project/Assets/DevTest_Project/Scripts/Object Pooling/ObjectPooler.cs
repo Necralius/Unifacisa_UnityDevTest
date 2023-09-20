@@ -1,9 +1,13 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Pool;
 using static NekraByte.Utility.DataTypes;
 
+// --------------------------------------------------------------------------
+// Name: ObjectPooler (Class)
+// Desc: This class represents an ObjectPooler desing pattern, an pattern that
+//       instance objects previously and maintains them, allowing them to be
+//       reused, greatly improving performance and efficiency.
+// --------------------------------------------------------------------------
 public class ObjectPooler : MonoBehaviour
 {
     #region - Singleton Pattern -
@@ -25,10 +29,12 @@ public class ObjectPooler : MonoBehaviour
 
     // ------------------------------------------ Methods ------------------------------------------ //
 
-    //
-    // Name: Start
-    // Desc: 
-    //
+    // ----------------------------------------------------------------------
+    // Name: Start (Method)
+    // Desc: This method is called on the game start, mainly the method
+    //       prepare the object pooler, instantiating all objects, and
+    //       managing them in a Queue of GameObjects.
+    // ----------------------------------------------------------------------
     private void Start()
     {
         poolDictionary = new Dictionary<string, Queue<GameObject>>();
@@ -38,7 +44,7 @@ public class ObjectPooler : MonoBehaviour
 
             for (int i = 0; i < pool.size; i++)
             {
-                GameObject obj = Instantiate(pool.prefab, transform);
+                GameObject obj = Instantiate(pool.prefab, pool.isAnCanvasObject ? GameManager.Instance.mainCanvas.transform.GetChild(0) : transform);
                 obj.SetActive(false);
                 objectPool.Enqueue(obj);
             }
@@ -47,7 +53,7 @@ public class ObjectPooler : MonoBehaviour
     }
 
     // ----------------------------------------------------------------------
-    // Name : SpawnFromPool
+    // Name : SpawnFromPool (Method)
     // Desc : This method represents an spawn  action but using the object
     //        pooler desing pattern, the  method activates an object  that
     //        already has been instatiated, but assinging his position and
@@ -58,11 +64,20 @@ public class ObjectPooler : MonoBehaviour
     {
         if (!poolDictionary.ContainsKey(tag))
         {
-            Debug.LogWarning("There is no pool with this tag, review the code syntax!");
+            Debug.LogWarning($"There is no pool with this tag {tag}, review the code syntax!");
             return null;
         }
 
-        GameObject objectToSpawn = poolDictionary[tag].Dequeue();
+        GameObject objectToSpawn = null;
+        while (true)
+        {
+            objectToSpawn = poolDictionary[tag].Dequeue();
+            if (!objectToSpawn.activeInHierarchy)
+            {
+                poolDictionary[tag].Enqueue(objectToSpawn);
+                break;
+            }
+        }
 
         objectToSpawn.SetActive(true);
         objectToSpawn.transform.position = position;
